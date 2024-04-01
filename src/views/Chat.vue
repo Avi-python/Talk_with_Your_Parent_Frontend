@@ -15,7 +15,7 @@
                     v-model.trim="text" 
                     @keydown.enter.prevent="sendMsg" 
                     placeholder="請輸入" /> -->
-                <Input :onSendMessage="onSendMessage" />
+                <Input :onSendMessage="onSendMessage" :disabled="loading" />
                 <!-- <p>Message is : {{ message }}</p> -->
             </div>
         </div>
@@ -27,15 +27,21 @@
 
     import Messages from '../components/Messages.vue';
     import Input from '../components/Input.vue';
-    import loop from '../service/ai.js';
+    // import loop from '../service/ai.js';
     import { onMounted } from 'vue'
     import { ref } from 'vue';
+    import axios from 'axios';
+    import useAxios from '../utils/useAxios';
+
+    const intercepter = useAxios();
 
     const props = defineProps({
         username: {
             type: String,
         },
     });
+
+    let loading = ref(false);
 
     const all_messages = ref([
         {
@@ -84,17 +90,23 @@
             member: me.value
         }
         all_messages.value.push(newMessage);
-        let ai_respond = await loop(message);
+        loading.value = true;
+        let ai_respond = await intercepter.post('http://localhost:8000/app/openai/', {
+            params: {
+                messages: message,
+            },
+        });
         const aiMessage = {
-            data: ai_respond,
+            data: ai_respond["data"]["content"],
             member: ai.value
-        }
+        };
         all_messages.value.push(aiMessage);
+        loading.value = false;
     }
 
 </script>
 
-<style>
+<style scoped>
 
 .chat-page {
     margin: 0;
