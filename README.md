@@ -43,3 +43,7 @@ npm run test:unit
 1. 要使用 isNavigation 
 
 ### login / logout
+
+### stream
+1. 沒辦法使用 axios，我改使用 fetch 就可以有動態的輸出!
+2. 會導致另一個問題就是沒有辦法使用 useAxios 的 intercepter，所以就多寫了一個 fetch 方法的 intercepter

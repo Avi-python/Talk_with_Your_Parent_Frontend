@@ -9,7 +9,7 @@ const useAxios = () => {
         baseURL,
         headers: {
             Authorization: `Bearer ${localStorage.getItem('authTokenAccess')}`,
-        }
+        },
     });
 
     axiosInstance.interceptors.request.use(async req => {

@@ -14,6 +14,7 @@ import Message from './Message.vue';
 const props = defineProps({
     messages: Array,
     me: Object,
+    // refresh: Boolean,
 });
 
 const bottomRef = ref(null); // which is a reference to an empty div positioned beneath the latest message
