@@ -24,9 +24,9 @@ const className = messageFromMe
     ? "messagesMessage currentMember"
     : "messagesMessage";
 
-username = messageFromMe
-    ? "我"
-    : username;
+// username = messageFromMe
+//     ? "我"
+//     : username;
 
 </script>
 

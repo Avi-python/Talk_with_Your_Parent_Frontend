@@ -20,6 +20,7 @@ let now = new Date()
 // get username after verify token ######
 // refresh token every 4 minutes ########
 setInterval(()=>{
+  console.log('refresh access token')
   axios({
     method: 'post',
     url:'http://localhost:8000/authentication/token/refresh/',

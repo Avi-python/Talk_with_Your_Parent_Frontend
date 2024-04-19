@@ -7,7 +7,7 @@ import store from '../store' // 這樣導入 vuex
 const routes = [
   {
     path: '/',
-    redirect: '/login',
+    redirect: '/Login',
   },
   {
     path: '/home',
@@ -15,8 +15,8 @@ const routes = [
     component: () => import('@/components/home.vue')
   },
   {
-    path: '/login',
-    name: 'login',
+    path: '/Login',
+    name: 'Login',
     component: () => import('@/components/login.vue')
   },
   {
@@ -28,8 +28,8 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue') 
   },
   {
-    path: '/chat/:username',
-    name: 'chat',
+    path: '/Chat/:username',
+    name: 'Chat',
     props: true,
     component: () => import('../views/Chat.vue'),
     // meta: {
