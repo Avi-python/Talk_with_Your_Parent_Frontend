@@ -39,7 +39,8 @@ const login = () => {
             // restore token to stage management and local storage
             store.commit('setToken', res.data)
             if (res.status == 200) {
-                router.push({ path: `/Chat/${email.value}` });
+                // router.push({ path: `/Chat/${email.value}` });
+                router.push({ path: `/Chat` });
             }
             else {
                 console.log("login failed");

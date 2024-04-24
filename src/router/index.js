@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import Chat from '../views/Chat.vue'
 import axios from 'axios'
 import store from '../store' // 這樣導入 vuex
@@ -10,14 +9,14 @@ const routes = [
     redirect: '/Login',
   },
   {
-    path: '/home',
-    name: 'home',
-    component: () => import('@/components/home.vue')
+    path: '/Home',
+    name: 'Home',
+    component: () => import('@/views/Home.vue')
   },
   {
     path: '/Login',
     name: 'Login',
-    component: () => import('@/components/login.vue')
+    component: () => import('@/views/Login.vue')
   },
   {
     path: '/about',
@@ -28,9 +27,10 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue') 
   },
   {
-    path: '/Chat/:username',
+    path: '/Chat',
+    // path: '/Chat/:username',
     name: 'Chat',
-    props: true,
+    // props: true,
     component: () => import('../views/Chat.vue'),
     // meta: {
     //     index: 2

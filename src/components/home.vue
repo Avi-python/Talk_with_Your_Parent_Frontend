@@ -20,14 +20,11 @@ import axios from 'axios';
 const api = useAxios();
 
 const func1 = async () => {
-    api.get('http://localhost:8000/app/function1/', { 
+    api.get('http://localhost:8000/authentication/user/', { 
     // 因為 api 是一個 axios instance 並且帶有 intercepter 攔載器（access token），所以這個請求會含有 access token
-        params: {
-            par1: 'par1',
-        }
     })
     .then(res => {
-        console.log(res.data['msg']);
+        console.log(JSON.parse(res.data[0]).username);
     })
     .catch(err => {
         console.log(err);

@@ -57,3 +57,16 @@ npm run test:unit
 
 ### 遇到的 error
 1. postman 可以接收到語音資料並播放，但我的網頁不行，後來 axios.get 裡面一定要家`responseType: 'arraybuffer'` 就可以了。
+
+## STT
+- 使用 Web Speech API : SpeechRecognition
+- [參考資料](https://ithelp.ithome.com.tw/m/articles/10329418)
+
+## Late Fetch
+- 要記得使用 onMounted，在 onMounted 裡面做 fetch，並在前後調整 isLoaded
+- 搭配使用 v-if。
+
+## Spinner
+- `npm install vue-spinner`
+- 在要使用的 .vue file 裡面 import 指定 spinner => `import BounceLoader from 'vue-spinner/src/BounceLoader.vue'`
+- 最後使用 tag <bounce-loader ...> </bounce-loader> 引入
