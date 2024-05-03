@@ -40,7 +40,7 @@ const login = () => {
             store.commit('setToken', res.data)
             if (res.status == 200) {
                 // router.push({ path: `/Chat/${email.value}` });
-                router.push({ path: `/Chat` });
+                router.push({ path: `/Home` });
             }
             else {
                 console.log("login failed");
@@ -74,10 +74,17 @@ const login = () => {
     font-size: 2em;
 }
 
+label {
+    font-family: "Playfair Display", serif;
+}
+
 .login-title > p {
-    padding: 10px 20px;
-    border-bottom: 1px solid rgb(177, 177, 177);
-    color: rgb(163, 163, 163);
+    font-size: 3rem;
+    font-family: "Playfair Display", serif;
+    font-weight: bold;
+    margin: 2rem 0;
+    font-size: 3rem;
+    color: #000000;
 }
 
 .login-form {

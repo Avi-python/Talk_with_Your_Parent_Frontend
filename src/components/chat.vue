@@ -47,27 +47,18 @@ const props = defineProps({
 
 let loading = ref(false);
 
+var total_tokens = 0;
+
 const all_messages = ref([
     {
         id: '1',
-        data: 'This is a test message!',
+        data: '你好!',
         member: {
             id: '1',
             clientData: {
                 color: 'blue',
-                username: 'bluemoon',
+                username: 'AI',
             }
-        }
-    },
-    {
-        id: '0',
-        data: 'This is my message',
-        member: {
-            id: '0',
-            clientData: {
-                color: 'green',
-                username: props.username,
-            },
         }
     },
 ]);
@@ -165,7 +156,7 @@ async function onSendMessage(message) {
             let message = decoder.decode(value);
 
             jobQueue.enqueue(new Promise((resolve, reject) => {
-                intercepter.get('http://localhost:8000/app/audio_file/', {
+                intercepter.get('http://localhost:8000/app/audio_file/', { // TODO : 再請求音檔的時候，如果正好要更換 access token 的時候，好像會出現問題
                     responseType: 'arraybuffer', // 一定要加這一個才可以使用
                     params: {
                         mark: mark

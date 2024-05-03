@@ -1,5 +1,6 @@
 /* color palette from <https://github.com/vuejs/theme> */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 * {
@@ -12,3 +13,10 @@ body {
 
 .color1 {background-color: #EEEEEE;}
 .color2 {background-color: #31363F;}
+.color3_back {
+  /* background-color: #77c6fc; */
+  background-color: #77c6fc;
+}
+.color3 {
+  color: #77c6fc;
+}

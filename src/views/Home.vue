@@ -5,7 +5,6 @@ import home from '../components/home.vue';
 
 <template>
   <main>
-    <WelcomeItem />
     <home />
   </main>
 </template>
