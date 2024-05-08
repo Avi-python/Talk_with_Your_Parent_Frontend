@@ -114,17 +114,16 @@ const start_chatting = () => {
 }
 
 .start-button {
+    position: fixed;
+    right: 2.5rem;
+    bottom: 2.5rem;
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 0vh 10vw;
-    height: 20vh;
+    justify-content: center;
 }
 
 .start-button button {
     width: 25rem;
     height: 10rem;
-    padding: 10px;
     font-size: 5rem;
     font-weight: bold;
     border-radius: 20px;
