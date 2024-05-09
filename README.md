@@ -70,3 +70,9 @@ npm run test:unit
 - `npm install vue-spinner`
 - 在要使用的 .vue file 裡面 import 指定 spinner => `import BounceLoader from 'vue-spinner/src/BounceLoader.vue'`
 - 最後使用 tag <bounce-loader ...> </bounce-loader> 引入
+
+## conversation reset
+如果在對話的過程中遇到
+1. maximum conversation tokens
+2. axios.get 文字出錯時
+就會出現 reset 按鈕，並且網頁沒有辦法對話，所以是強制使用者重新載入頁面並清除 memory。
