@@ -1,7 +1,21 @@
 <template>
     <div class="color1 chat-page">
-        <div class="color2 left-panel">
-            <h2>hi</h2>
+        <div class="left-panel" :class="{ 'open': !isNotMaxTokens }">
+
+            <button @click="resetTokens" class="color3_back material-icons">restart_alt</button>
+
+            <div class="content">
+                <div class="wrapper">
+                    <div class="description-form">
+                        <div class="description-title">
+                            <p>重新啟動!</p>
+                        </div>
+                        <div class="description-content">
+                            {{ resetMessage }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="right-panel">
             <div class="message-box-up">
@@ -29,12 +43,11 @@
 import Messages from '../components/Messages.vue';
 import Input from '../components/Input.vue';
 // import loop from '../service/ai.js';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import useAxios from '../utils/useAxios';
 import { jwtDecode } from "jwt-decode";
 import dayjs from 'dayjs';
-
 const intercepter = useAxios();
 
 const baseURL = 'http://localhost:8000';
@@ -45,9 +58,9 @@ const props = defineProps({
     },
 });
 
-let loading = ref(false);
+const isNotMaxTokens = ref(true);
 
-var total_tokens = 0;
+let loading = ref(false);
 
 const all_messages = ref([
     {
@@ -62,6 +75,8 @@ const all_messages = ref([
         }
     },
 ]);
+
+const resetMessage = ref("看起來是輸入的上下文長度已到達上限，請點擊左方按鈕重新啟動對話！");
 
 const me = ref({
     id: '0',
@@ -78,6 +93,20 @@ const ai = ref({
         username: "AI",
     },
 });
+
+async function resetTokens() {
+
+    await intercepter.get("http://localhost:8000/app/reset_conversation_tokens/")
+        .then(response => {
+            console.log(response.data); // success
+            isNotMaxTokens.value = true;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+
+    window.location.reload();
+}
 
 const originalFetch = window.fetch;
 
@@ -126,58 +155,85 @@ async function onSendMessage(message) {
     // intercepter
     window.fetch = fetchWithIntercepter;
 
-    const response = await fetch(baseURL + "/app/openai/", {
-        method: 'POST', // Set the method to POST
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ params: { messages: message } }),
-    });
+    try {
+        const response = await fetch(baseURL + "/app/openai/", {
+            method: 'POST', // Set the method to POST
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ params: { messages: message } }),
+        });
 
-    console.log(response);
+        console.log(response);
 
-    const jobQueue = new Queue();
+        const jobQueue = new Queue();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+        var mark = 0;
 
-    var mark = 0;
+        const job = async () => {
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) {
+                    jobQueue.enqueue(new Promise((resolve, reject) => {
+                        resolve({ message: "DEBUG:Done", audio_file: null });
+                    }));
+                    break;
+                }
 
-    const job = async () => {
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
+                let message = decoder.decode(value);
+
                 jobQueue.enqueue(new Promise((resolve, reject) => {
-                    resolve({ message: "DEBUG:Done", audio_file: null });
-                }));
-                break;
-            }
-
-            let message = decoder.decode(value);
-
-            jobQueue.enqueue(new Promise((resolve, reject) => {
-                intercepter.get('http://localhost:8000/app/audio_file/', { // TODO : 再請求音檔的時候，如果正好要更換 access token 的時候，好像會出現問題
-                    responseType: 'arraybuffer', // 一定要加這一個才可以使用
-                    params: {
-                        mark: mark
-                    }
-                })
-                    .then(response => {
-                        const audio_file = response.data;
-                        resolve({ message: message, audio_file: audio_file });
+                    intercepter.get('http://localhost:8000/app/audio_file/', { // TODO : 再請求音檔的時候，如果正好要更換 access token 的時候，好像會出現問題
+                        responseType: 'arraybuffer', // 一定要加這一個才可以使用
+                        params: {
+                            mark: mark
+                        }
                     })
-                    .catch(error => {
-                        reject(error);
-                    });
-            }));
-            mark += 1;
+                        .then(response => {
+                            const audio_file = response.data;
+                            resolve({ message: message, audio_file: audio_file });
+                        })
+                        .catch(error => {
+                            reject(error);
+                        });
+                }));
+                mark += 1;
+            }
         }
+
+        job();
+        await jobQueue.waitForDequeue();
+
+        jobQueue.enqueue(new Promise((resolve, reject) => {
+            intercepter.get('http://localhost:8000/app/conversation_tokens/', { // TODO : 再請求音檔的時候，如果正好要更換 access token 的時候，好像會出現問題
+            })
+                .then(response => {
+                    console.log(response.data);
+                    if (response.data.isFull) {
+                        resetMessage.value = "看起來是輸入的上下文長度已到達上限，請點擊左方按鈕重新啟動對話！";
+                        isNotMaxTokens.value = false;
+                    }
+                    resolve({ message: "", audio_file: null });
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        }));
+
+        await jobQueue.waitForDequeue();
+
+        loading.value = false;
+
+
+    } catch (error) {
+
+        console.error('Error:', error);
+        resetMessage.value = "網頁發生錯誤，請點擊左方按鈕重新啟動對話！";
+        isNotMaxTokens.value = false; // 如果出錯，強制重新啟動
+
     }
-
-    job();
-    await jobQueue.waitForDequeue();
-
-    loading.value = false;
 
 }
 
@@ -204,7 +260,7 @@ class Queue {
             if (!this.isEmpty()) {
                 const item = await this.dequeue();
                 console.log("item.message: ", item.message);
-                if(item.audio_file === null) {
+                if (item.audio_file === null) {
                     break;
                 }
                 // console.log("item.audio_file: ", item.audio_file.length);
@@ -234,11 +290,11 @@ class Queue {
     margin: 0;
     display: flex;
     height: 100vh;
+    width: 100vw;
 }
 
 .right-panel {
     overflow: hidden;
-    height: 100vh;
     flex: 1;
     flex-direction: column;
     padding: 0vh 20vw;
@@ -246,21 +302,89 @@ class Queue {
     /* background-color: rgb(255, 248, 230); */
 }
 
-
 .left-panel {
-    width: 30vh;
-    box-shadow: 4px 0px 5px 0px rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0;
+    display: flex;
+    pointer-events: none;
+    /* 隱藏時禁用內部元素的交互 */
+    flex-direction: row;
+    position: fixed;
+    align-items: center;
+    justify-content: start;
+}
+
+.left-panel.open {
+    opacity: 1;
+    pointer-events: all;
+    animation: slideIn 1.5s forwards;
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.left-panel button {
+    border-radius: 15px;
+    margin-left: 2rem;
+    height: auto;
+    padding: 5vw;
+    font-size: 5rem;
+    border: none;
+    box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
+    color: white;
+    cursor: pointer;
+}
+
+.left-panel button:hover {
+    background-color: #000000;
+}
+
+.content {
+    width: 20rem;
+    padding: 2rem;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
+    background-color: white;
+}
+
+.wrapper {
+    color: black;
+    font-family: Arial, sans-serif;
+}
+
+.description-title {
+    /* background-color: black; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* horizontally center */
+    box-sizing: border-box;
+    font-size: 2em;
+}
+
+.description-title>p {
+    padding: 10px 20px;
+    border-bottom: 1px solid rgb(177, 177, 177);
 }
 
 @media screen and (max-width: 1500px) {
     .right-panel {
         padding: 0vh 10vw;
-    }
-}
-
-@media screen and (max-width: 800px) {
-    .left-panel {
-        width: 0;
     }
 }
 
