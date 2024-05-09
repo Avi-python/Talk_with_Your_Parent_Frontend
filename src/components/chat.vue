@@ -1,5 +1,5 @@
 <template>
-    <div class="color1 chat-page">
+    <div class="chat-page">
         <div class="left-panel" :class="{ 'open': !isNotMaxTokens }">
 
             <button @click="resetTokens" class="color3_back material-icons">restart_alt</button>
@@ -287,6 +287,7 @@ class Queue {
 
 <style scoped>
 .chat-page {
+    background-color: rgb(25, 43, 58);
     margin: 0;
     display: flex;
     height: 100vh;
@@ -305,6 +306,7 @@ class Queue {
 .left-panel {
     top: 0;
     left: 0;
+    background-color: rgba(25, 43, 58, 0.5);
     width: 100vw;
     height: 100vh;
     opacity: 0;
@@ -359,7 +361,7 @@ class Queue {
     margin-left: 2rem;
     margin-right: 2rem;
     box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
-    background-color: white;
+    background-color: rgb(255, 238, 162);
 }
 
 .wrapper {
@@ -380,6 +382,13 @@ class Queue {
 .description-title>p {
     padding: 10px 20px;
     border-bottom: 1px solid rgb(177, 177, 177);
+}
+
+.right-panel {
+    background-image: url('@/assets/chat_background.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 
 @media screen and (max-width: 1500px) {
@@ -416,6 +425,7 @@ class Queue {
 .appContent {
     height: 100%;
     display: flex;
+    margin: 0 1rem; 
     flex-direction: column;
     justify-content: center;
     /* box-sizing: border-box; */

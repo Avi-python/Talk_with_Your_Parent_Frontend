@@ -51,6 +51,16 @@ const className = messageFromMe
     text-align: right;
 }
 
+.messagesMessage.currentMember > .messageContent {
+    background-color: white;
+    color: #222831;
+}
+
+.messagesMessage > .messageContent {
+    background-color: #222831;
+    color: white;
+}
+
 .messagesMessage>.avatar {
     margin: 0 10px -10px;
 }
@@ -60,11 +70,17 @@ const className = messageFromMe
     font-size: 14px;
 }
 
+.messageContent {
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
+
+}
+
 .messageContent > .text {
     padding: 10px;
     max-width: 400px;
     margin: 0;
-    color: #222831;
     display: inline-block;
     animation: slideUp 0.5s ease-in-out;
 }

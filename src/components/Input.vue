@@ -3,15 +3,16 @@
         <form @submit.prevent="onSubmit">
             <textarea class="color1" v-model="text" @input="onChange" :disabled="disabled" />
             <button type="button" @click="onSubmit" :disabled="disabled"><i
-                    class="material-icons keyboard_arrow_up">keyboard_arrow_up</i></button>
-            <button type="button" @click="startRecognition" class="color1">語</button>
+                    class="material-icons keyboard_arrow_up">check_small</i></button>
+            <button type="button" @click="startRecognition" class="color1 material-icons"
+                :disabled="disabled">mic</button>
         </form>
     </div>
 </template>
 
 <script setup>
 
-import { ref, onMounted, defineProps } from 'vue';
+import { ref, onMounted, watch, defineProps } from 'vue';
 
 function onChange(e) {
     const textValue = e.target.value;
@@ -31,6 +32,8 @@ const props = defineProps({
 
 const text = ref('');
 
+//自己調整 textarea 行高
+
 let recognition = null;
 
 ///語音轉文字
@@ -42,7 +45,7 @@ const startRecognition = () => {
 onMounted(() => {
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.continuous = false;
-    recognition.lang = 'zh-TW'; 
+    recognition.lang = 'zh-TW';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -111,17 +114,18 @@ form {
 
 textarea {
     padding: 20px 20px 0px 20px;
-    resize: none;
+    resize: hidden;
     overflow: hidden;
     display: block;
     flex: 1;
     border-radius: 20px;
-    border: 1px solid #222831;
+    border: none;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
     font-size: 1em;
     word-wrap: break-word;
-    color: #222831;
+    color: #000000;
     margin: 0px;
-    line-height: 20px;
 }
 
 textarea:focus {
@@ -131,11 +135,13 @@ textarea:focus {
 
 button {
     margin: 10px 0px 10px 10px;
-    padding: 5px 0px 0px 0px;
     font-size: 16px;
+    justify-content: center;
+    align-items: center;
     height: 40px;
     width: 40px;
     background-color: #222831;
+    box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
     color: white;
     border: none;
     border-radius: 15px;
