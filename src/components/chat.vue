@@ -46,8 +46,12 @@ import Input from '../components/Input.vue';
 import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import useAxios from '../utils/useAxios';
+import { useStore } from 'vuex';
 import { jwtDecode } from "jwt-decode";
-import dayjs from 'dayjs';
+import dayjs from 'dayjs'; ''
+
+const store = useStore();
+
 const intercepter = useAxios();
 
 const baseURL = 'http://localhost:8000';
@@ -105,7 +109,20 @@ async function resetTokens() {
             console.log(error);
         });
 
-    window.location.reload();
+    all_messages.value = [
+        {
+            id: '1',
+            data: '你好!',
+            member: {
+                id: '1',
+                clientData: {
+                    color: 'blue',
+                    username: 'AI',
+                }
+            }
+        },
+    ];
+    // window.location.reload(); // TODO : 這個方法不太好，之後要改成不重新整理頁面的方法
 }
 
 const originalFetch = window.fetch;
@@ -122,12 +139,19 @@ async function fetchWithIntercepter(...args) {
     console.log("isExpired", isExpired);
 
     if (isExpired) {
-        var newToken = await axios.post(`${baseURL}/api/token/refresh/`, {
-            refresh: localStorage.getItem('authTokenRefresh'),
+        await axios({
+            method: 'post',
+            url: 'http://localhost:8000/authentication/token/refresh/',
+            data: {
+                refresh: localStorage.getItem('authTokenRefresh')
+            },
         })
-
-        localStorage.setItem("authTokenRefresh", newToken.data['refresh']);
-        localStorage.setItem("authTokenAccess", newToken.data['access']);
+            .then(res => {
+                store.commit('setToken', res.data)
+            })
+            .catch(err => {
+                console.log("reset access token error: ", err);
+            });
     }
 
     options.headers.Authorization = `Bearer ${localStorage.getItem('authTokenAccess')}`;
@@ -425,7 +449,7 @@ class Queue {
 .appContent {
     height: 100%;
     display: flex;
-    margin: 0 1rem; 
+    margin: 0 1rem;
     flex-direction: column;
     justify-content: center;
     /* box-sizing: border-box; */

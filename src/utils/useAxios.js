@@ -2,35 +2,46 @@ import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import dayjs from 'dayjs';
 
-const baseURL = 'localhost:8000'
+const baseURL = 'http://localhost:8000'
 
 const useAxios = () => {
     const axiosInstance = axios.create({
         baseURL,
         headers: {
-            Authorization: `Bearer ${localStorage.getItem('authTokenAccess')}`,
+            Authorization: `Bearer ${localStorage.getItem('authTokenAccess')}`, // 這個只會在創建的時候被執行一次，因此如果 token 過期了，這個就會一直是過期的 token
         },
     });
 
     axiosInstance.interceptors.request.use(async req => {
-        
+
         const payload = jwtDecode(String(localStorage.getItem('authTokenAccess')));
         // const isExpired = dayjs.unix(payload.exp).diff(dayjs()) < 1; 
         // This checks if the difference is less than 1 millisecond.
 
         const isExpired = dayjs.unix(payload.exp).diff(dayjs()) < 1;
+
+        console.log('access token isExpired: ', isExpired);
         // payload.exp 的部分是 jwt的過期時間，如果這個過期時間超過了當前時間 dayjs 就會傳 true 代表 token 已經失效
-        if(!isExpired){
+        if (!isExpired) {
+            req.headers.Authorization = `Bearer ${localStorage.getItem('authTokenAccess')}`; // 如果不加這個，就會一直使用上面過期的 token
             return req;
         } else {
-            const response = await axios.post(`${baseURL}/api/token/refresh/`, {
-                refresh: localStorage.getItem('authTokenRefresh'),   
+            await axios({
+                method: 'post',
+                url: 'http://localhost:8000/authentication/token/refresh/',
+                data: {
+                    refresh: localStorage.getItem('authTokenRefresh')
+                },
             })
+                .then(res => {
+                    localStorage.setItem('authTokenAccess', res.data["access"]);
+                    localStorage.setItem('authTokenRefresh', res.data["refresh"]);
+                })
+                .catch(err => {
+                    console.log("reset access token error: ", err);
+                });
 
-            localStorage.setItem("authTokenRefresh", response.data['refresh']);
-            localStorage.setItem("authTokenAccess", response.data['access']);
-
-            req.headers.Authorization = `Bearer ${response.data['access']}`;
+            req.headers.Authorization = `Bearer ${localStorage.getItem('authTokenAccess')}`;
             return req;
         }
     });

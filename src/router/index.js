@@ -78,6 +78,11 @@ router.beforeEach((to, from, next) => {
               // if toke{n valid #############
               if (res.status == 200) {
                 isNavigating = true;
+
+                if(to.path == '/Chat') {
+                  
+                }
+                
                 return next({ path: to.path });
               }
               else {

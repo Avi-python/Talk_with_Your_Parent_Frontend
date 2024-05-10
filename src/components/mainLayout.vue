@@ -20,18 +20,21 @@ let now = new Date()
 // get username after verify token ######
 // refresh token every 4 minutes ########
 setInterval(()=>{
-  console.log('refresh access token')
   axios({
     method: 'post',
     url:'http://localhost:8000/authentication/token/refresh/',
     data: {      
-      refresh:localStorage.getItem('authTokenRefresh')
+      refresh: localStorage.getItem('authTokenRefresh')
     },
   })
   .then(res=>{
-    store.commit('setToken',res.data)    
+    store.commit('setToken', res.data)    
+  })
+  .catch(err=>{
+    console.log("reset access token error: ", err);
+    // logout()
   }) 
-},1000*60*4); // 要求重新刷新 access token，1000 毫秒 * 60 * 4 = 4分鐘
+},1000 * 60 * 4); // 要求重新刷新 access token，1000 毫秒 * 60 * 4 = 4分鐘
 
 const logout = () => {
   store.commit('delToken')    
