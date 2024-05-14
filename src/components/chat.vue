@@ -8,7 +8,7 @@
                 <div class="wrapper">
                     <div class="description-form">
                         <div class="description-title">
-                            <p>重新啟動!</p>
+                            <p>重新啟動! {{ timeLeft }}</p>
                         </div>
                         <div class="description-content">
                             {{ resetMessage }}
@@ -30,7 +30,7 @@
                     v-model.trim="text" 
                     @keydown.enter.prevent="sendMsg" 
                     placeholder="請輸入" /> -->
-                    <Input :onSendMessage="onSendMessage" :disabled="loading" />
+                    <Input :onSendMessage="onSendMessage" :disabled="disableInput" />
                     <!-- <p>Message is : {{ message }}</p> -->
                 </div>
             </div>
@@ -63,8 +63,7 @@ const props = defineProps({
 });
 
 const isNotMaxTokens = ref(true);
-
-let loading = ref(false);
+let disableInput = ref(false);
 
 const all_messages = ref([
     {
@@ -81,6 +80,10 @@ const all_messages = ref([
 ]);
 
 const resetMessage = ref("看起來是輸入的上下文長度已到達上限，請點擊左方按鈕重新啟動對話！");
+const maximum_wait_time = 10;
+const timeLeft = ref(maximum_wait_time);
+var timer = null;
+var needReload = false;
 
 const me = ref({
     id: '0',
@@ -99,6 +102,14 @@ const ai = ref({
 });
 
 async function resetTokens() {
+
+    clearInterval(timer);
+    timeLeft.value = maximum_wait_time;
+
+    if(needReload){
+        window.location.reload();
+        return;
+    }
 
     await intercepter.get("http://localhost:8000/app/reset_conversation_tokens/")
         .then(response => {
@@ -122,6 +133,8 @@ async function resetTokens() {
             }
         },
     ];
+
+    disableInput.value = false;
     // window.location.reload(); // TODO : 這個方法不太好，之後要改成不重新整理頁面的方法
 }
 
@@ -173,7 +186,7 @@ async function onSendMessage(message) {
         member: ai.value
     };
 
-    loading.value = true;
+    disableInput.value = true;
 
     all_messages.value.push(aiMessage);
     // intercepter
@@ -188,7 +201,11 @@ async function onSendMessage(message) {
             body: JSON.stringify({ params: { messages: message } }),
         });
 
-        console.log(response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log("response: ", response);
 
         const jobQueue = new Queue();
         const reader = response.body.getReader();
@@ -236,7 +253,15 @@ async function onSendMessage(message) {
                 .then(response => {
                     console.log(response.data);
                     if (response.data.isFull) {
-                        resetMessage.value = "看起來是輸入的上下文長度已到達上限，請點擊左方按鈕重新啟動對話！";
+                        resetMessage.value = "看起來是輸入的上下文長度已到達上限，請趕緊點擊左方按鈕重新啟動對話！如果時間到達，便會踢出聊天室！";
+                        timer = setInterval(() => {
+                            timeLeft.value -= 1;
+                            if (timeLeft.value === 0) {
+                                needReload = true;
+                                clearInterval(timer);
+                                window.location.reload();
+                            }
+                        }, 1000);
                         isNotMaxTokens.value = false;
                     }
                     resolve({ message: "", audio_file: null });
@@ -248,14 +273,15 @@ async function onSendMessage(message) {
 
         await jobQueue.waitForDequeue();
 
-        loading.value = false;
+        disableInput.value = false;
 
 
     } catch (error) {
 
         console.error('Error:', error);
-        resetMessage.value = "網頁發生錯誤，請點擊左方按鈕重新啟動對話！";
+        resetMessage.value = "網頁發生錯誤，請點擊左方按鈕重新排隊！";
         isNotMaxTokens.value = false; // 如果出錯，強制重新啟動
+        needReload = true;
 
     }
 
@@ -341,12 +367,14 @@ class Queue {
     position: fixed;
     align-items: center;
     justify-content: start;
+    transition : all 1.5s;
 }
 
 .left-panel.open {
     opacity: 1;
     pointer-events: all;
     animation: slideIn 1.5s forwards;
+    transition : all 1.5s;
 }
 
 @keyframes slideIn {
