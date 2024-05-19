@@ -33,7 +33,6 @@ onUpdated(() => {
     flex-grow: 1;
     overflow: auto;
     scrollbar-width: none;
-    
 }
 
 </style>

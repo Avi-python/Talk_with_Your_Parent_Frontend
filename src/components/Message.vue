@@ -74,16 +74,18 @@ const className = messageFromMe
     padding: 0.5rem 1rem;
     border-radius: 15px;
     box-shadow: 0px 10px 20px 1px rgba(0, 0, 0, 0.15);
-
 }
 
-.messageContent > .text {
+.messageContent >  .text {
+    text-align: left;
     padding: 10px;
     max-width: 400px;
     margin: 0;
     display: inline-block;
     animation: slideUp 0.5s ease-in-out;
 }
+
+
 
 @keyframes slideUp {
   from {

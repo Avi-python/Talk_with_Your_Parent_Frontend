@@ -30,7 +30,7 @@
                     v-model.trim="text" 
                     @keydown.enter.prevent="sendMsg" 
                     placeholder="請輸入" /> -->
-                    <Input :onSendMessage="onSendMessage" :disabled="loading" />
+                    <Input ref="inputRef" :onSendMessage="onSendMessage" :disabled="loading" />
                     <!-- <p>Message is : {{ message }}</p> -->
                 </div>
             </div>
@@ -63,8 +63,12 @@ const props = defineProps({
 });
 
 const isNotMaxTokens = ref(true);
-
 let loading = ref(false);
+const inputRef = ref();
+
+// onMounted(() => {
+//     inputRef.value.startRecognition();
+// });
 
 const all_messages = ref([
     {
@@ -249,6 +253,10 @@ async function onSendMessage(message) {
         await jobQueue.waitForDequeue();
 
         loading.value = false;
+
+        if(isNotMaxTokens.value) {
+            inputRef.value.startRecognition();
+        }
 
 
     } catch (error) {
