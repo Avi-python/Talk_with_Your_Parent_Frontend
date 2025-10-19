@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Chat from '../views/Chat.vue'
 import axios from 'axios'
 import store from '../store' // 這樣導入 vuex
+import useAxios from '@/utils/useAxios'
+
+const interceptor = useAxios();
 
 const routes = [
   {
@@ -27,10 +30,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue') 
   },
   {
-    path: '/Chat',
-    // path: '/Chat/:username',
+    path: '/PersonMenu',
+    name: 'PersonMenu',
+    component: () => import('@/views/PersonMenu.vue')
+  },
+  {
+    path: '/Chat/:personality_name',
     name: 'Chat',
-    // props: true,
+    props: true,
     component: () => import('../views/Chat.vue'),
     // meta: {
     //     index: 2
@@ -79,11 +86,22 @@ router.beforeEach((to, from, next) => {
               if (res.status == 200) {
                 isNavigating = true;
 
-                if(to.path == '/Chat') {
-                  
+                if(from.path.includes('/Chat')) {
+                  console.log('reset conversation token');
+                  interceptor.get('http://localhost:8000/app/reset_conversation_tokens/')
+                  .then(res => {
+                    console.log('reset conversation token success');
+                  })
+                  .catch(err => {
+                    console.log('reset conversation token failed');
+                  })
+                  .finally(() => {
+                    return next({ path: to.path });
+                  })
+
+                } else {
+                  return next({ path: to.path });
                 }
-                
-                return next({ path: to.path });
               }
               else {
                 // if token is not valid ####

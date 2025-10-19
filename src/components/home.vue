@@ -31,7 +31,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const start_chatting = () => {
-    router.push({ path: `/Chat` });
+    router.push({ path: `/PersonMenu` });
 }
 
 </script>

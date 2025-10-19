@@ -60,7 +60,12 @@ const props = defineProps({
     username: {
         type: String,
     },
+    personality_name: {
+        type: String,
+    }
 });
+
+console.log("personality_name: ", props.personality_name);
 
 const isNotMaxTokens = ref(true);
 let loading = ref(false);
@@ -189,7 +194,7 @@ async function onSendMessage(message) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ params: { messages: message } }),
+            body: JSON.stringify({ params: { messages: message, personality_name: props.personality_name} }),
         });
 
         console.log(response);
@@ -216,7 +221,8 @@ async function onSendMessage(message) {
                     intercepter.get('http://localhost:8000/app/audio_file/', { // TODO : 再請求音檔的時候，如果正好要更換 access token 的時候，好像會出現問題
                         responseType: 'arraybuffer', // 一定要加這一個才可以使用
                         params: {
-                            mark: mark
+                            mark: mark,
+                            personality_name: props.personality_name
                         }
                     })
                         .then(response => {
